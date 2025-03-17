@@ -1,0 +1,263 @@
+﻿using SimulatorLib.Common;
+using SimulatorLib.CPU;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace SimulatorLib.Memory.Schedule
+{
+    public class FRFCFS : IScheduler
+    {
+        private MemoryController MC;
+
+        public FRFCFS(MemoryController mc) { MC = mc; }
+
+        public void Tick()
+        {
+            
+            Request request = MC.WRITE_MODE.DrainWrites ? best_write_req() : best_read_req() ;  
+
+            if (request == null)
+            {
+                if (MC.WRITE_MODE.DrainWrites)
+                    DEBUG.Print($"*** DrainWrites: FRFCFS: Selected *** nothing ***.");
+                return;
+            }
+
+            if ((MC.Cycle >= 8334936 && MC.Cycle < 8334952))
+            {
+                DEBUG.Print($"{MC.Cycle}: FRFCFS SELECTED  *** {request.BlockAddress}" +
+                            $"[00{request.MemAddr.Bank}, {request.MemAddr.Row}, {request.MemAddr.Column}]");
+            }
+
+
+            //if (MC.Cycle > 333200 && MC.Cycle < 333500)  
+            //    DEBUG.Print($"{MC.Cycle} FRFCFS selected|issued {request.BlockAddress} for {request.COMMAND} ");
+
+            if (request.CMD == COMMAND.WRITE)   // alert writeback mode
+            {
+                DEBUG.AssertPrint(MC.WRITE_MODE.DrainWrites, "FRFCFS: Selected write command while in read mode.");
+                MC.WRITE_MODE.issued_write_cmd(COMMAND.WRITE);
+            }
+
+            MC.ISSUE(request);
+
+            #region commented
+            //Request SelectRequest(Request req1, Request req2)
+            //{
+            //    //if (MC.Cycle > 333200 && MC.Cycle < 333500) DEBUG.Print($"--- SelectRequest [{req1?.BlockAddress}, {req2?.BlockAddress}]");
+            //    if (req1 == null & req2 == null)
+            //        return null;
+
+            //    if (req1 == null) return req2;
+            //    if (req2 == null) return req1;
+
+            //    bool isWr1 = req1.TYPE == Operation.WRITE;
+            //    bool isWr2 = req2.TYPE == Operation.WRITE;
+
+
+            //    if (isWr1 && isWr2)
+            //    {
+            //        return HotOrEarlier(req1, req2);
+            //    }
+
+            //    if (isWr1 ^ isWr2)
+            //    {
+            //        if (isWr1)
+            //            return req1;
+            //        else
+            //            return req2;
+            //    }
+
+            //    //two reads
+            //    return HotOrEarlier(req1, req2);
+            //}
+
+
+            #endregion        
+        }
+
+            //***********************Abstract**************************
+
+        public bool is_row_hit(Request req)
+        {
+            //switch (req.CMD)
+            //{
+            //    case COMMAND.READ:
+            //    case COMMAND.WRITE:
+            //        return true;
+            //}
+            //return false;
+            return (req.CMD == COMMAND.READ || req.CMD == COMMAND.WRITE);
+        }
+
+        public Request best_read_req()
+        {
+
+            Request bestReq = null;
+
+            for (int i = 0; i < MC.ReadQueue.Count; i++)
+            {
+
+                Request REQ = MC.ReadQueue[i]; 
+
+                if (REQ.IsServed) continue;
+                   
+                if (!REQ.CanBeIssued) continue;
+
+                if (bestReq == null)
+                    bestReq = REQ;
+                else
+                    bestReq = HotOrEarlier(bestReq, REQ);
+
+            }
+
+            return bestReq;
+
+        }
+
+        int x = 0;
+        public Request best_write_req()
+        {
+            Request bestReq = null;
+
+            for (int i = 0; i < MC.WriteQueue.Count; i++)
+            {
+
+                Request REQ = MC.WriteQueue[i];
+
+                if (REQ.IsServed) continue;
+
+                if (!REQ.CanBeIssued) continue;
+
+                if (bestReq == null)
+                    bestReq = REQ;
+                else
+                {
+                    string s = $"HotOrEarlier({ bestReq.BlockAddress}, { REQ.BlockAddress}) => ";
+                    bestReq = HotOrEarlier(bestReq, REQ);
+                    if (MC.WRITE_MODE.DrainWrites)
+                    {
+                        if (++x % 1000 == 0)
+                        {
+                            DEBUG.Print($"{s} => {bestReq.BlockAddress}");
+                        }
+                    }
+                    
+                }
+
+            }
+
+            return bestReq;
+
+        }
+
+        public Request BestReq()
+        {
+            Request bestReq = null;
+
+            List<Request>[] BankQueue = new List<Request>[8];
+
+            List<Request> q;
+
+            if (MC.WRITE_MODE.DrainWrites)
+                q = MC.WriteQueue.Where(r => r.IsServed == false).ToList();
+            else
+                q = MC.ReadQueue.Where(r => r.IsServed == false).ToList();
+
+            for (int i = 0; i < 8; i++)
+            {
+
+                BankQueue[i] = q.Where(r => r.MemAddr.Bank == i).ToList();
+
+                Request req = sch_best_req(BankQueue[i]);
+
+                if (req == null) continue;
+
+                if (!req.CanBeIssued) continue;
+
+                if (bestReq == null)
+                {
+                    bestReq = req;
+                    continue;
+                }
+                bestReq = mc_better_req(bestReq, req);
+            }
+
+            return bestReq;
+
+        }
+
+        Request HotOrEarlier(Request req1, Request req2)
+        {
+            bool hit1 = is_row_hit(req1);
+            bool hit2 = is_row_hit(req2);
+            
+            //string s = $">> {MC.Cycle} | HotOrEarlier({req1.BlockAddress}, {req2.BlockAddress})";
+            if (hit1 ^ hit2)
+            {
+                if (hit1)
+                {
+                    //s+= $" => {req1.BlockAddress} is HOT";
+                    //if (MC.Cycle > 333200 && MC.Cycle < 333500) DEBUG.Print(s) ;
+                    return req1;
+                }
+                else
+                {
+                    //s+= $" => {req2.BlockAddress} is HOT";
+                    //if (MC.Cycle > 333200 && MC.Cycle < 333500) DEBUG.Print(s) ;
+                    return req2;
+                }
+            }
+            if (req1.TsArrival <= req2.TsArrival)
+            {
+                //s+= $" => {req1.BlockAddress} is Earlier";
+                //if (MC.Cycle > 333200 && MC.Cycle < 333500) DEBUG.Print(s) ;
+                return req1;
+            }
+            else
+            {
+                //s+= $" => {req2.BlockAddress} is Earlier";
+                //if (MC.Cycle > 333200 && MC.Cycle < 333500) DEBUG.Print(s) ;
+                return req2;
+            }
+        }
+
+        public Request sch_best_req(List<Request> rq)
+        {           
+            if (rq == null) return null;
+            if (rq.Count == 0) return null;
+
+            Request bestReq = rq[0];
+            for (int i = 1; i < rq.Count; i++)
+            {
+                bestReq = HotOrEarlier(bestReq, rq[i]);
+            }
+
+            return bestReq;
+
+        }
+
+        private Request mc_better_req(Request req1, Request req2)
+        {
+            bool isWr1 = req1.TYPE == Operation.WRITE;
+            bool isWr2 = req2.TYPE == Operation.WRITE;
+
+            if (isWr1 && isWr2)
+            {
+                return HotOrEarlier(req1, req2);
+            }
+
+            if (isWr1 ^ isWr2)
+            {
+                if (isWr1) return req1;
+                else return req2;
+            }
+
+            //two reads
+            return HotOrEarlier(req1, req2);
+        }
+
+
+    }
+}
