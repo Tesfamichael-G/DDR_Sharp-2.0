@@ -19,4 +19,4 @@ A C# based simulator for modeling and analyzing DRAM (Dynamic Random-Access Memo
 - **C# Implementation:** Written in C# for performance and ease of use.
 
 ### Installation
--**Clone the repository**
+- **Clone the repository**
