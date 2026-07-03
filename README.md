@@ -26,7 +26,7 @@ Unlike high-level abstract models, this framework enforces strict structural hie
 ### 1. Installation
 Clone the repository and navigate to the project root:
 ```bash
-git clone [https://github.com/Tesfamichael-G/DDR_Sharp-2.0.git](https://github.com/Tesfamichael-G/DDR_Sharp-2.0.git)
+git clone https://github.com/Tesfamichael-G/DDR_Sharp-2.0.git
 cd DDR_Sharp-2.0
 ```
 ### 2. Build the Project
