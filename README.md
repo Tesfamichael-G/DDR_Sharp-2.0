@@ -1,6 +1,6 @@
 # DRAM Architectural Simulator (C#)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache](https://img.shields.io/badge/License-MIT-yellow.svg)](http://www.apache.org/licenses/)
 [![Reproduction Status](https://img.shields.io/badge/Reproducibility-Verified-success)](https://github.com/Tesfamichael-G)
 
 A high-performance, cycle-approximate C# simulation framework designed for modeling, configuring, and evaluating Dynamic Random-Access Memory (DRAM) architectures. This tool enables researchers and systems engineers to analyze the complex trade-offs between custom memory topologies, timing constraints, and power consumption profiles under realistic workloads.
