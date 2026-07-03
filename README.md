@@ -1,6 +1,6 @@
 # DRAM Architectural Simulator (C#)
 
-[![License: Apache](https://img.shields.io/badge/License-MIT-yellow.svg)](http://www.apache.org/licenses/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Reproduction Status](https://img.shields.io/badge/Reproducibility-Verified-success)](https://github.com/Tesfamichael-G)
 
 A high-performance, cycle-approximate C# simulation framework designed for modeling, configuring, and evaluating Dynamic Random-Access Memory (DRAM) architectures. This tool enables researchers and systems engineers to analyze the complex trade-offs between custom memory topologies, timing constraints, and power consumption profiles under realistic workloads.
@@ -58,7 +58,7 @@ This project is open-source and licensed under the Apache License — see the LI
 ✍️ Citation / Contact
 If you utilize this simulator or its architectural models in your academic research, please cite it as follows:
 ```code
-@software{tesfamichael_dram_sim,
+@artcle {tesfamichael_dram_sim,
   author = {Gebrehiwot, T. G., Andargie, F. A. & Ismail, M.},
   title = {DDRSHARP: A Fast and Extensible DRAM Simulator.},
   doi = {https://doi.org/10.3844/jcssp.2023.836.846},
