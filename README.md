@@ -48,9 +48,10 @@ The simulator expects a trace file where each line denotes an access operation u
 ```
 ### Extensible Architecture
 The framework is designed around dependency injection principles, allowing researchers to easily swap out or implement custom:
-#### 1. Scheduling Policies: (e.g., FR-FCFS vs. FCFS memory controllers).
-#### 1. Address Mapping Schemes: (e.g., RoBaRaCoCh vs. RoCoBaRaCh configurations).
-#### 1. Power Models: Custom analytical power calculators based on state transitions.
+
+1. **Scheduling Policies:** (e.g., FR-FCFS vs. FCFS memory controllers).
+2. **Address Mapping Schemes:** (e.g., RoBaRaCoCh vs. RoCoBaRaCh configurations).
+3. **Power Models:** Custom analytical power calculators based on state transitions.
 
 ### License & Open Science Commitment
 This project is open-source and licensed under the Apache License — see the LICENSE file for details. We highly encourage extension, reproduction, and modification by the computer architecture community.
