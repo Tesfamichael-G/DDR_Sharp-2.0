@@ -35,16 +35,15 @@ Compile the simulation framework using the dotnet CLI:
 dotnet build -c Release
 ```
 ### 3. Execution Example
-Run a simulation by passing a configuration file and a workload trace:
-```bash
-dotnet run --project DRAMSimulator.CLI --config ./configs/ddr4_default.json --trace ./traces/sample_workload.txt
-```
+To run a simulation using default settings at ./DDR_Sharp-2.0/SimulatorLib/Configuration Parameters/DefaultSettings.cs
+and updtate the trace input within the function InitializeUI of the program.cs file. 
+
 ### Input Trace Format
-The simulator expects a trace file where each line denotes an access operation using the following format:
+The simulator expects a memory trace file where each line denotes an access operation using the following format:
 ```plaintext
-# [Timestamp_Cycles] [Access_Type: R/W] [Hexadecimal_Memory_Address]
-100 R 0x7FFF0000
-142 W 0x7FFF0004
+# [Hexadecimal_Memory_Address] [Access_Type: R/W] 
+0x7FFF0000 R 
+0x7FFF0004 W 
 ```
 ### Extensible Architecture
 The framework is designed around dependency injection principles, allowing researchers to easily swap out or implement custom:
